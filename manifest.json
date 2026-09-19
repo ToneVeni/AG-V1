@@ -1,6 +1,6 @@
 {
-  "name": "Daily Tracker",
-  "short_name": "Tracker",
+  "name": "AG-V1",
+  "short_name": "AG-V1",
   "description": "Personal daily habit, workout and cardio tracker.",
   "start_url": "./index.html",
   "scope": "./",
