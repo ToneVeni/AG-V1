@@ -1,0 +1,4 @@
+assets/
+_deploy/
+_deploy.zip
+.claude/serve.ps1
