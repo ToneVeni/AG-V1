@@ -1,4 +1,4 @@
-const CACHE = 'ag-v1-v8';
+const CACHE = 'ag-v1-v9';
 const ASSETS = [
   './',
   './index.html',

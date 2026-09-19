@@ -8,6 +8,7 @@ import {
 import { getWeekRecords, downloadWeek } from '../export.js';
 import { openMissingDataModal } from '../modals.js';
 import { setScreen } from '../router.js';
+import { showToast } from '../components.js';
 
 async function weekOverallStatus(weekStartIso) {
   const records = await getWeekRecords(weekStartIso);
@@ -28,6 +29,21 @@ async function getPastWeekStarts() {
   return Array.from(set).sort((a, b) => (a < b ? 1 : -1));
 }
 
+async function runDownload(weekStartIso) {
+  // The file save itself (via a hidden <a download>) is silent — Chrome just
+  // drops it in the device's Downloads folder with no on-screen confirmation,
+  // especially when running installed as a standalone PWA with no address
+  // bar to show a download chip. Without an explicit toast here it looks
+  // like the button did nothing even when the export worked.
+  try {
+    state.downloadedWeeks = await downloadWeek(weekStartIso, state.fileType);
+    if (state.reportView === 'preview') await renderPreview(); else await renderList();
+    showToast({ kind: 'saved', text: `Downloaded (${state.fileType.toUpperCase()})` });
+  } catch (err) {
+    showToast({ kind: 'failed', text: "Couldn't save · Retry", onRetry: () => runDownload(weekStartIso) });
+  }
+}
+
 async function doDownload(weekStartIso) {
   const missing = await checkMissingLabelled(weekStartIso);
   if (missing.length) {
@@ -41,14 +57,10 @@ async function doDownload(weekStartIso) {
           setScreen('home');
         }
       },
-      onExportAnyway: async () => {
-        state.downloadedWeeks = await downloadWeek(weekStartIso, state.fileType);
-        if (state.reportView === 'preview') renderPreview(); else renderList();
-      },
+      onExportAnyway: () => runDownload(weekStartIso),
     });
   } else {
-    state.downloadedWeeks = await downloadWeek(weekStartIso, state.fileType);
-    if (state.reportView === 'preview') renderPreview(); else renderList();
+    await runDownload(weekStartIso);
   }
 }
 
